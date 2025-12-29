@@ -25,7 +25,7 @@ const emit = defineEmits(['selectedPost', 'openNew']);
           </button>
         </div>
 
-        <div v-if="isLoading">Loading posts...</div>
+        <PostLoader v-if="isLoading" />
         <div v-else-if="error"> Error: {{ error }}</div>
         <div v-else-if="posts.length === 0">No posts yet</div>
 

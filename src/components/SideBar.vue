@@ -10,6 +10,7 @@ import PostLoader from './PostLoader.vue';
 const props = defineProps({
   isSideBarOpen: Boolean,
   selectedPost: Object,
+  currentUser: Object,
 })
 
 const emit = defineEmits(['created', 'delete', 'save']);
@@ -129,7 +130,11 @@ async function deleteComment(commentId) {
           <!-- Content here -->
           <h2 v-if="isEditMode">Post editing</h2>
 
-          <AddPost v-if="!selectedPost" @created="handlePostCreated" />
+          <AddPost 
+          v-if="!selectedPost && currentUser" 
+          :currentUser="currentUser" 
+          @created="handlePostCreated" 
+          />
 
           <EditPost v-else-if="isEditMode" :post="selectedPost" @save="handleSave" @cancel="isEditMode = false" />
 
@@ -166,6 +171,7 @@ async function deleteComment(commentId) {
 
           <AddComment
             v-if="showCommentForm"
+            :postId="selectedPost.id"
             @cancel="cancelCommentForm"
             @created="addComment"
             />

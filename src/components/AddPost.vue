@@ -30,6 +30,7 @@ function validate() {
 
   return Object.keys(errors.value).length === 0;
 }
+console.log('USER:', props.currentUser);
 
 async function submitPost() {
   if (!validate()) {
@@ -47,7 +48,7 @@ async function submitPost() {
       body: JSON.stringify({
         title: title.value,
         body: body.value,
-        userId: props.currentUser.id,
+        userId: currentUser.value.id,
       }),
     });
     if (!res.ok) {

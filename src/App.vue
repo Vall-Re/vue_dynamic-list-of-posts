@@ -101,6 +101,7 @@ function deletePost(postId) {
     <SideBar 
       :isSideBarOpen="isSideBarOpen" 
       :selectedPost="selectedPost"
+      :currentUser="user"
       @created="addPost"
       @save="updatePost"
       @delete="deletePost"

@@ -78,5 +78,7 @@ function cancelEdit() {
       <button type="button" class="button is-primary" @click="saveEdits">Save</button>
       <button type="button" class="button" @click="cancelEdit">Cancel</button>
     </div>
+
+    <p v-if="error" class="help is-danger">{{ error }}</p>
   </div>
 </template>

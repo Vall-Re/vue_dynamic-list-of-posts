@@ -1,9 +1,35 @@
+/* Sidebar */
+.Sidebar {
+  overflow: hidden;
+  opacity: 0;
+  transition: max-width 0.5s ease-in-out, opacity 0.5s ease-in-out;
+  max-width: 100%; /* базова ширина на мобільних */
+}
+
+/* Sidebar відкритий */
+.Sidebar--open {
+  opacity: 1;
+}
+
+/* Для десктопів */
+@media (min-width: 769px) {
+  .Sidebar {
+    max-width: 0;
+  }
+
+  .Sidebar--open {
+    max-width: 50%;
+  }
+}
+
+/* Анімація завантаження (lds-ring) */
 .lds-ring {
   display: inline-block;
   position: relative;
   width: 80px;
   height: 80px;
 }
+
 .lds-ring div {
   box-sizing: border-box;
   display: block;
@@ -16,15 +42,19 @@
   animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
   border-color: #c0c0c0 transparent transparent transparent;
 }
+
 .lds-ring div:nth-child(1) {
   animation-delay: -0.45s;
 }
+
 .lds-ring div:nth-child(2) {
   animation-delay: -0.3s;
 }
+
 .lds-ring div:nth-child(3) {
   animation-delay: -0.15s;
 }
+
 @keyframes lds-ring {
   0% {
     transform: rotate(0deg);

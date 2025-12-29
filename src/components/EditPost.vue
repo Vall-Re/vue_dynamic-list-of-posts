@@ -9,6 +9,11 @@ const emit = defineEmits(['save', 'cancel']);
 
 const title = ref('');
 const body = ref('');
+const error = ref('');
+const isLoading = ref(false);
+
+const BASE_URL = 'https://mate.academy/students-api'
+
 
 watch(
   () => props.post,
@@ -19,17 +24,38 @@ watch(
   { immediate: true },
 );
 
-function saveEdits() {
-  emit('save', {
-    ...props.post,
-    title: title.value,
-    body: body.value,
-  });
+async function saveEdits() {
+  error.value = '';
+  isLoading.value = true;
+
+  try {
+    const res = await fetch(`${BASE_URL}/posts/${props.post.id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        title: title.value,
+        body: body.value,
+        userId: props.post.userId,
+      }),
+    });
+    if (!res.ok) { 
+      throw new Error('Failed to save post');
+    }
+    const updatedPost = await res.json();
+    emit('save', updatedPost);
+  } catch (err) {
+    error.value = 'Failed to save post. Please try again.';
+  } finally {
+    isLoading.value = false;
+}
 }
 
 function cancelEdit() {
   emit('cancel');
 }
+
 </script>
 
 <template>
@@ -49,8 +75,8 @@ function cancelEdit() {
     </div>
 
     <div class="buttons mt-3">
-      <button class="button is-primary" @click="saveEdits">Save</button>
-      <button class="button" @click="cancelEdit">Cancel</button>
+      <button type="button" class="button is-primary" @click="saveEdits">Save</button>
+      <button type="button" class="button" @click="cancelEdit">Cancel</button>
     </div>
   </div>
 </template>

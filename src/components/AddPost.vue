@@ -1,6 +1,10 @@
 <script setup>
 import { ref } from 'vue';
 
+const props = defineProps({
+  currentUser: Object,
+});
+
 const emit = defineEmits(['created']);
 
 const BASE_URL = 'https://mate.academy/students-api'
@@ -9,6 +13,7 @@ const title = ref('');
 const body = ref('');
 
 const errors = ref({});
+const error = ref('');
 const isLoading = ref(false);
 
 
@@ -42,7 +47,7 @@ async function submitPost() {
       body: JSON.stringify({
         title: title.value,
         body: body.value,
-        userId: 1,
+        userId: props.currentUser.id,
       }),
     });
     if (!res.ok) {
@@ -54,6 +59,7 @@ async function submitPost() {
     body.value = '';
   } catch (err) {
     console.error(err);
+    error.value = 'Failed to create post. Please try again.';
   } finally {
     isLoading.value = false;
   }
@@ -63,6 +69,7 @@ function clearForm() {
   title.value = '';
   body.value = '';
   errors.value = {};
+  error.value = '';
 }
 </script>
 
@@ -75,7 +82,7 @@ function clearForm() {
       <div class="field">
         <label class="label">Title</label>
         <div class="control">
-          <input v-model="title" class="input" type="text" placeholder="Post title">
+          <input v-model="title" class="input" :class="{ 'is-danger': errors.title }" type="text" placeholder="Post title">
         </div>
         <p v-if="errors.title" class="help is-danger">
           {{ errors.title }}

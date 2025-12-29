@@ -1,7 +1,11 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
 const props = defineProps({
+  postId: {
+    type: Number,
+    required: true
+  },
   name: {
     type: String,
     default: 'new-comment'
@@ -13,6 +17,10 @@ const emit = defineEmits(['created', 'cancel']);
 const authorName = ref('');
 const email = ref('');
 const body = ref('');
+const isLoading = ref(false);
+const error = ref('');
+
+const BASE_URL = 'https://mate.academy/students-api';
 
 const errors = ref({
   name: '',
@@ -20,45 +28,77 @@ const errors = ref({
   body: ''
 });
 
+watch(authorName, () => {
+  if (errors.value.name) {
+    errors.value.name = '';
+  }
+});
+watch(email, () => {
+  if (errors.value.email) {
+    errors.value.email = '';
+  }
+});
+watch(body, () => {
+  if (errors.value.body) {
+    errors.value.body = '';
+  }
+});
+
 function validate() {
-  let valid = true;
-  errors.value = { name: '', email: '', body: '' };
+  errors.value = {};
 
   if (!authorName.value.trim()) {
     errors.value.name = 'Name is required';
-    valid = false;
   }
   if (!email.value.trim()) {
     errors.value.email = 'Email is required';
-    valid = false;
   } else if (!/^\S+@\S+\.\S+$/.test(email.value)) {
     errors.value.email = 'Email is invalid';
-    valid = false;
   }
   if (!body.value.trim()) {
     errors.value.body = 'Comment cannot be empty';
-    valid = false;
   }
 
-  return valid;
+  return Object.keys(errors.value).length === 0;
 }
 
-function submitComment() {
+async function submitComment() {
   if (!validate()) return;
+  isLoading.value = true;
+  error.value = '';
 
   const newComment = {
-    id: Date.now(),
+    postId: props.postId,
     name: authorName.value,
     email: email.value,
     body: body.value
   };
 
-  emit('created', newComment);
-
-  body.value = '';
+  try {
+    const res = await fetch(`${BASE_URL}/comments`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(newComment),
+    });
+    if (!res.ok) {
+      throw new Error('Failed to submit comment');
+    }
+    const createdComment = await res.json();
+    emit('created', createdComment);
+    body.value = '';
+  } catch (err) {
+    console.error(err);
+    error.value = 'Failed to submit comment. Please try again.';
+  } finally {
+    isLoading.value = false;
+  }
 }
 
 function cancelForm() {
+  errors.value = { name: '', email: '', body: '' };
+  body.value = '';
   emit('cancel');
 }
 </script>
@@ -126,7 +166,7 @@ function cancelForm() {
 
     <!-- Buttons -->
     <div class="buttons mt-3">
-      <button type="button" class="button is-primary" @click="submitComment">Submit</button>
+      <button type="button" class="button is-primary" :class="{ 'is-loading': isLoading }" @click="submitComment">Submit</button>
       <button type="button" class="button" @click="cancelForm">Cancel</button>
     </div>
   </div>

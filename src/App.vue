@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import PostList from './components/PostList.vue';
 import SideBar from './components/SideBar.vue';
 import Login from './components/Login.vue';
@@ -11,17 +11,32 @@ const posts = ref([]);
 const isLoading = ref(true);
 const error = ref(null);
 
-const BASE_URL = 'https://mate.academy/students-api'
+const BASE_URL = 'https://mate.academy/students-api';
 
-function handleLogin(newUser) {
-  user.value = newUser;
-  posts.value = [];
-  isLoading.value = false;
+async function fetchUserPosts(userId) {
+  isLoading.value = true;
   error.value = null;
+  try {
+    const res = await fetch(`${BASE_URL}/posts?userId=${userId}`);
+    if (!res.ok) throw new Error('Failed to fetch posts');
+    posts.value = await res.json();
+  } catch (err) {
+    error.value = err.message;
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+async function handleLogin(newUser) {
+  user.value = newUser;
+  await fetchUserPosts(newUser.id);
 }
 
 function handleLogout() {
   user.value = null;
+  posts.value = [];
+  selectedPost.value = null;
+  isSideBarOpen.value = false;
 }
 
 function openNewSideBar() {
@@ -36,7 +51,8 @@ function openPostSideBar(post) {
 
 function addPost(post) {
   posts.value.push(post);
-  isSideBarOpen.value = false;
+  selectedPost.value = post;
+  isSideBarOpen.value = true;
 }
 
 function updatePost(updatedPost) {
@@ -62,7 +78,7 @@ function deletePost(postId) {
       <div class="navbar-item">
         <div class="buttons">
           <div class="mr-5 mb-2">
-            <p>User: {{ user.name }}</p>
+            <p>User: {{ user?.name }}</p>
           </div>
             <a class="button is-light" @click="handleLogout">Logout</a>          
         </div>
@@ -72,13 +88,14 @@ function deletePost(postId) {
   </nav>
 
   <Login v-if="!user" @login="handleLogin" />
+
   <div v-else>
     <PostList 
       :posts="posts" 
       :isLoading="isLoading"
       :error="error"
       :selectedPost="selectedPost"
-      @openNew = "openNewSideBar"
+      @openNew="openNewSideBar"
       @selectedPost="openPostSideBar" 
     />
     <SideBar 
